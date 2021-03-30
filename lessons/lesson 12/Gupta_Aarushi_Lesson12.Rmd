@@ -1,0 +1,62 @@
+---
+title: "Lesson 12 - Date/Time and Factors"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+```{r echo = FALSE, message= FALSE, warning= FALSE}
+load("Lesson12.RData")
+library(dplyr)
+library(ggplot2)
+library(DT)
+load(file = "Lesson12.rdata")
+```
+
+
+## Introduction 
+
+For this lesson, I chose to analyze the amount of time it takes for a unit to arrive on scene from the given time they received a call. In other words, I am analyzing the difference between the Received.DtTm and On.Scene.DtTm variables, based on the zipcode of SF (Zipcode.of.Incident) where the emergency occurred. 
+
+
+## Coding 
+
+```{r}
+fdata <- FD12 %>%
+  mutate(START = as.POSIXct(Received.DtTm, format = "%m/%d/%Y %I:%M:%S %p"), 
+         END = as.POSIXct(On.Scene.DtTm, format = "%m/%d/%Y %I:%M:%S %p"),
+         T_TIME = as.numeric((END-START)/60),
+         ZIP = as.character(Zipcode.of.Incident)) %>%
+  select(c(7, 11, 18, 33:36)) %>%
+  filter(T_TIME > 0)  
+```
+
+## Analysis
+
+I provided a table of results and a visualization to show boxplots of the response times for each zipcode. 
+
+```{r message= FALSE, warning= FALSE}
+fdata %>% group_by(ZIP) %>%
+  filter(ZIP != "NA") %>%
+  summarize(mean = mean(T_TIME), 
+            median = median(T_TIME), 
+            minimum = min(T_TIME), 
+            maximum = max(T_TIME)) %>%
+datatable()
+```
+
+I filtered out response times (T_TIME) greater than 20 minutes as outliers, and I also removed data where the zipcode wasn't specified (ZIP == "NA"). Then, I created the boxplots. 
+
+```{r  message= FALSE, warning= FALSE, fig.height = 7, fig.width = 13}
+ZIPdata <- fdata %>% filter(T_TIME <= 20 & ZIP != "NA")
+ggplot(ZIPdata, aes(x = ZIP, y = T_TIME, fill = as.factor(ZIP))) +
+  geom_boxplot() + 
+  labs(title = "SF Fire Dept. Emergency Response Times Based on Zipcodes", 
+       x = "Zipcode", y = "Response Time (mins)") +
+  theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 15)) 
+```
+
+The difference between zipcodes may not appear to be that significant, but the reality is that when it comes to emergency response times, every second matters. Interestingly, 94105 (South Beach area), 94158 (Mission Bay), and
+94123 (Marina District) are the wealthiest zipcodes in SF, and they all had some of the highest average response times. However, 94109 (Nob Hill) is one of the wealthiest zipcodes in the entire country, and it had one of the lowest average response times. 
+
+Thus, the data is somewhat inconclusive in this aspect, as some wealthy areas had quick response times and others didn't. I expected that richer areas would be more likely to have faster response times, as a whole. Further analysis is needed because there are probably confounding variables at play that's affecting this analysis. 

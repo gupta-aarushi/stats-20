@@ -1,0 +1,157 @@
+---
+title: "Lesson 13 - Interview practice"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+```
+
+## 1. 
+
+```{r message=FALSE}
+## I loaded the dataset into R and double checked the number of rows and columns.
+ames <- read_csv("data.csv")
+nrow(ames)
+ncol(ames)
+```
+
+> There were `1460` rows and `81` columns in the dataset (ames) of housing sales in Ames, Iowa.
+
+## 2. 
+
+```{r message=FALSE}
+# First, we extract the homes sold in 2006. 
+ames06 <- ames %>% filter(YrSold == "2006")
+
+# Then, we calculate the average sales price of homes sold in 2006. 
+mean(ames06$SalePrice)
+
+# Then, we calculate the average sales price based on neighborhood.  
+nhood06 <- ames06[c(13, 78, 81)]
+avg06 <- nhood06 %>% group_by(Neighborhood) %>% summarize(average = mean(SalePrice))
+
+# Finally, we rank the data. 
+rev(order(avg06$average))
+```
+
+The average sales price for homes sold in Ames in 2006 is $182,549.50. The neighboorhood with homes sales in 2006 that had the highest average sales price is Stone Brook and the one with lowest average sales price is Iowa DOT and Rail Road.
+
+## 3. 
+
+```{r}
+# First, find the indoor square footage for each home sold in 2006. 
+ames_sf <- ames06 %>% mutate(InnerSF = `1stFlrSF` + `2ndFlrSF` + `TotalBsmtSF` + `LowQualFinSF`)
+sqft <- ames_sf[c(81, 82)]
+
+# Then, calculate the median sales price of homes with indoor sqft greater than or equal to 2000 ft.
+sqft %>% filter(InnerSF >= 2000) %>% summarize(median = median(SalePrice))
+
+# Finally, calculate the percentage of homes that meet this criterion.
+(nrow(sqft %>% filter(InnerSF >= 2000)))/(nrow(ames06))
+```
+
+The median sales price of homes which have an indoor square footage of greater than or equal to 2000 ft (excluding porches, garages, decks, and veneers) is $180,000. The percentage of homes which met the criterion are approximately 77.4% out of all homes sold in 2006. 
+
+## 4. 
+
+```{r fig.height = 7, fig.width = 10}
+# First, I created a table by extracting the month and year sold variables from ames. I converted the table into a dataframe in order to use ggplot2. 
+t_sold <- table(ames$MoSold, ames$YrSold)
+t_sold.df <- as.data.frame(t_sold)
+colnames(t_sold.df) <- c("Month", "Year", "Count")
+
+# Then, I made sure to change the month numbers into month abbreviations and filter for only 2006 to 2009 before making the plot. The 2010 data is incomplete so I chose to exclude it for this question.
+t_sold.df$Month <- (month.abb[t_sold.df$Month])
+SOLD <- t_sold.df %>% filter(Year %in% c("2006", "2007", "2008", "2009"))
+
+# Finally, I used a stacked barplot to display the data. 
+SOLD %>% ggplot(aes(x = factor(Month, level = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")), 
+                    y = Count, fill = as.factor(Year))) + 
+  geom_bar(stat = "identity", position = "stack", width = 0.6) +
+  ggtitle("Homes Sold Per Month in Ames", subtitle = "2006 to 2009") + 
+  labs(x = "Month", y = "Number of Homes Sold") +
+  theme_bw() + 
+  scale_fill_discrete(name = "Year") +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = c(0.959, 0.885))
+```
+
+In Ames, Iowa, more homes are sold in June and July than other months. In other words, there is a seasonality of home sales in the summer, which is a consistent trend from year to year. As shown, in every year from 2006 to 2009, the number of homes sold increased in June and July and tapered off towards the winter months. 
+
+This aligns with findings from the real estate industry, who observe that the housing market tends to heat up in the summer months and cool off in the winter (at least in the Eastern/Northeastern U.S.) to the point where each season has its own unique market. 
+
+## 5. 
+
+```{r fig.height = 10, fig.width = 11}
+# First, I extracted the heating, kitchen, fireplace, and garage quality factors from ames for further analysis.
+rmdl_ames <- ames[c(41, 54, 58, 65, 81)]
+
+# Then, I changed the categories of excellent, good, average/typical, fair, and poor for each factor into a scale of 5 to 1, respectively. 
+rmdl_ames <- rmdl_ames %>% mutate(HeatingQC = replace(HeatingQC, HeatingQC == "Ex", 5)) %>%
+  mutate(KitchenQual = replace(KitchenQual, KitchenQual == "Ex", 5)) %>%
+  mutate(FireplaceQu = replace(FireplaceQu, FireplaceQu == "Ex", 5)) %>% 
+  mutate(GarageCond = replace(GarageCond, GarageCond == "Ex", 5))
+rmdl_ames <- rmdl_ames %>% mutate(HeatingQC = replace(HeatingQC, HeatingQC == "Gd", 4)) %>%
+  mutate(KitchenQual = replace(KitchenQual, KitchenQual == "Gd", 4)) %>%
+  mutate(FireplaceQu = replace(FireplaceQu, FireplaceQu == "Gd", 4)) %>%
+  mutate(GarageCond = replace(GarageCond, GarageCond == "Gd", 4))
+rmdl_ames <- rmdl_ames %>% mutate(HeatingQC = replace(HeatingQC, HeatingQC == "TA", 3)) %>%
+  mutate(KitchenQual = replace(KitchenQual, KitchenQual == "TA", 3)) %>%
+  mutate(FireplaceQu = replace(FireplaceQu, FireplaceQu == "TA", 3)) %>%
+  mutate(GarageCond = replace(GarageCond, GarageCond == "TA", 3))
+rmdl_ames <- rmdl_ames %>% mutate(HeatingQC = replace(HeatingQC, HeatingQC == "Fa", 2)) %>%
+  mutate(KitchenQual = replace(KitchenQual, KitchenQual == "Fa", 2)) %>%
+  mutate(FireplaceQu = replace(FireplaceQu, FireplaceQu == "Fa", 2)) %>%
+  mutate(GarageCond = replace(GarageCond, GarageCond == "Fa", 2))
+rmdl_ames <- rmdl_ames %>% mutate(HeatingQC = replace(HeatingQC, HeatingQC == "Po", 1)) %>%
+  mutate(KitchenQual = replace(KitchenQual, KitchenQual == "Po", 1)) %>%
+  mutate(FireplaceQu = replace(FireplaceQu, FireplaceQu == "Po", 1)) %>%
+  mutate(GarageCond = replace(GarageCond, GarageCond == "Po", 1))
+
+# I filtered out sales prices greater than $425,000 as outliers and I also removed data where the factor qualities weren't specified (NA). 
+RMDL <- rmdl_ames %>% filter(SalePrice <= 425000)
+RMDL <- na.omit(RMDL)
+
+# Then, I made 4 different boxplots to show the distribution of the qualities (from 1 to 5) of each factor in the context of sales prices. 
+HC <- ggplot(RMDL, aes(x = HeatingQC, y = SalePrice, fill = HeatingQC, color = HeatingQC, alpha = 0.2)) + 
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 1.5, width = 0.6) + 
+  ggtitle("Home Sales Price Based on Heating Condition", subtitle = "2006 to mid-2010") +
+  labs(x = "Heating Condition", y = "Sales Price of Home ($)") +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", axis.text.x = element_text(size = 7)) 
+
+KQ <- ggplot(RMDL, aes(x = KitchenQual, y = SalePrice, fill = KitchenQual, color = KitchenQual, alpha = 0.2)) + 
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 1.5, width = 0.6) + 
+  ggtitle("Home Sales Price Based on Kitchen Quality", subtitle = "2006 to mid-2010") +
+  labs(x = "Kitchen Quality", y = "Sales Price of Home ($)") +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", axis.text.x = element_text(size = 7)) 
+
+FQ <- ggplot(RMDL, aes(x = FireplaceQu, y = SalePrice, fill = FireplaceQu, color = FireplaceQu, alpha = 0.2)) + 
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 1.5, width = 0.6) + 
+  ggtitle("Home Sales Price Based on Fireplace Quality", subtitle = "2006 to mid-2010") +
+  labs(x = "Fireplace Quality", y = "Sales Price of Home ($)") +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", axis.text.x = element_text(size = 7)) 
+
+GC <- ggplot(RMDL, aes(x = GarageCond, y = SalePrice, fill = GarageCond, color = GarageCond, alpha = 0.2)) + 
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 1.5, width = 0.6) + 
+  ggtitle("Home Sales Price Based on Garage Condition", subtitle = "2006 to mid-2010") +
+  labs(x = "Garage Condition", y = "Sales Price of Home ($)") +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", axis.text.x = element_text(size = 7)) 
+
+# Finally, I arranged the boxplots into a grid.
+grid.arrange(HC, KQ, FQ, GC)
+```

@@ -1,0 +1,88 @@
+---
+title: "Gupta_Aarushi_Lesson02"
+author: "SID 905-328-941"
+date: "Stats 20 Summer 20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 4. {.tabset}
+
+### A.
+
+```{r}
+9/3+7*5*6+16
+```
+
+### B.
+
+```{r}
+24/3*4-3+7
+```
+
+### C.
+
+```{r}
+10-4+7+3*(24/4)
+```
+
+### D.
+
+```{r}
+sqrt(16)/2^3
+```
+
+### E.
+
+```{r}
+v <- log(3, base = exp(1))
+exp(v)
+```
+
+### F.
+
+```{r}
+which(1:100 %% 2 & 1:100 %% 3 & 1:100 %% 5, arr.ind = TRUE)
+```
+
+### G.
+
+```{r}
+`space line` <- 1:5
+```
+
+### H.
+
+```{r}
+4 < 5 
+6 > 1 
+1 <= 2 
+3 >= 3
+9 == 9
+10 != 4
+```
+
+### I.
+
+```{r}
+(((((3*2)+2)/2)+12)-3)
+(((((9*2)+2)/2)+12)-9)
+(((((5*2)+2)/2)+12)-5)
+```
+
+### J.
+
+```{r}
+trick2 <- function(x){(((((2*x)+2)/2)+12)-x)}
+```
+
+these are the tests for trick2:
+
+```{r}
+trick2(-7)
+trick2(18)
+trick2(5000000)
+```

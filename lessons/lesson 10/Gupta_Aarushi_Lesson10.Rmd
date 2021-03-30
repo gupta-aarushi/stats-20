@@ -1,0 +1,118 @@
+---
+title: "Lesson 10 - Data Cleaning"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(DT)
+```
+
+
+# The code used to clean the data
+
+```{r}
+load(file = "Lesson10SU.rdata")
+
+# Express Running.Time in minutes instead of hours.
+
+movies100fixed <- movies100lesson10 %>% 
+  mutate(RunTime = gsub(" ", "", Running.Time)) %>%
+  mutate(RunTime = gsub("hr", "", RunTime)) %>%
+  mutate(RunTime = gsub("min", "", RunTime)) %>%
+  mutate(Running.Time = as.numeric(substr(RunTime, start = 1, stop = 1)) * 60) %>% 
+  mutate(Running.Time = Running.Time + as.numeric(substr(RunTime, start = 2, stop = 3))) %>% 
+  mutate(Running.Time = ifelse(is.na(Running.Time), 120, Running.Time)) %>% 
+  select(-RunTime) %>%
+ 
+  # Display Gross without the commas and dollar sign.
+  
+  mutate(Gross = gsub("\\$|", "", Gross)) %>%
+  mutate(Gross = gsub(",", "", Gross)) %>%
+  mutate(Gross = as.numeric(Gross)) %>%
+  
+  # Display Max.Th without the commas.
+  
+  mutate(Max.Th = gsub(",", "", Max.Th)) %>%
+  mutate(Max.Th = as.numeric(Max.Th)) %>%
+           
+  # Display Opening without the commas and dollar sign.
+  
+  mutate(Opening = gsub("\\$|", "", Opening)) %>%
+  mutate(Opening = gsub(",", "", Opening)) %>%
+  mutate(Opening = as.numeric(Opening)) %>%
+  
+  # Create PctOfTotal without the percentage sign. 
+  
+  mutate(X..of.Total = gsub("%", "", X..of.Total)) %>%
+  mutate(PctOfTotal = as.numeric(X..of.Total)) %>%
+    
+  # Display Open.Th without the commas. 
+    
+  mutate(Open.Th = gsub(",", "", Open.Th)) %>%
+  mutate(Open.Th = as.numeric(Open.Th)) %>%
+           
+  # Display intGross without the commas and dollar sign.
+  
+  mutate(intGross = gsub("\\$|", "", intGross)) %>%
+  mutate(intGross = gsub(",", "", intGross)) %>%
+  mutate(intGross = as.numeric(intGross)) %>% 
+    
+  # Display Budget without the commas and dollar sign.
+  
+  mutate(Budget = gsub("\\$|", "", Budget)) %>%
+  mutate(Budget = gsub(",", "", Budget)) %>%
+  mutate(Budget = as.numeric(Budget)) %>%
+           
+  # Mutate the Genre variable using the grepl() function.
+
+  mutate(Action = grepl("Action", Genre)) %>%
+  mutate(Adventure = grepl("Adventure", Genre)) %>%
+  mutate(Thriller = grepl("Thriller", Genre)) %>%
+  mutate(ActionAdventureThriller = ifelse((Action == TRUE | Adventure == TRUE | Thriller == TRUE), 
+                                          TRUE, FALSE)) %>%
+  mutate(Drama = grepl("Drama", Genre)) %>%
+  mutate(Comedy = grepl("Comedy", Genre)) %>%
+  mutate(SciFi = grepl("Sci-Fi", Genre)) %>%
+  mutate(Family = grepl("Family", Genre)) %>%
+  mutate(Horror = grepl("Horror", Genre)) %>%
+  mutate(Biography = grepl("Biography", Genre)) %>%
+  select(-Genre, -Action, -Adventure, -Thriller) %>%
+  
+  # Mutate the OpenDate and CloseDate using the as.Date() function.
+  
+  mutate(OpenDate = as.Date(OpenDate, format = "%b%d,%Y")) %>%
+  mutate(CloseDate = as.Date(CloseDate, format = "%b%d,%Y")) 
+
+  # Create daysrun using the difference of OpenDate and CloseDate.
+  
+  movies100fixed$daysrun <- difftime(movies100fixed$CloseDate, movies100fixed$OpenDate, units = c("days"))
+
+  # Order the columns correctly. 
+  
+  movies100fixed <- movies100fixed[c("Rank", "Release", "Running.Time", "mpaa", "Gross", "Opening", 
+              "PctOfTotal", "Max.Th", "Open.Th", "Distributor", "intGross", "Budget", "OpenDate", 
+              "CloseDate", "ActionAdventureThriller", "Drama", "Comedy", "SciFi", "Family", "Horror",
+              "Biography", "daysrun")]
+```
+
+# datatable result
+
+```{r}
+datatable(movies100fixed) 
+```
+
+# summary result
+
+```{r} 
+summary(movies100fixed)
+```
+
+# str result
+
+```{r} 
+str(movies100fixed)
+```

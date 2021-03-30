@@ -1,0 +1,20 @@
+---
+title: "Gupta_Aarushi_Lesson01"
+author: "SID 905-328-941"
+date: "Stats 20 Summer 20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 4. Proof of a proper install
+
+### A. Start Up Screen Capture
+
+![1. Screen Capture](Startup Screen Capture.png){width=365in}
+
+### B. Package Installation
+
+![2. Installation](Package Installation.png){width=365in}

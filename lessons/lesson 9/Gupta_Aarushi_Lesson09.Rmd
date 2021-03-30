@@ -1,0 +1,98 @@
+---
+title: "Lesson 9 - Graphics II"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+Libraries that you may need:
+
+```{r message = FALSE, warning = FALSE}
+library(readr)
+library(tidyverse)
+library(gridExtra)
+library(ggthemes)
+```
+
+## 1 Scatterplot
+
+```{r}
+load(file = "Lesson9SU.rdata")
+PLAY_SAL <- inner_join(nbaall, salary, by = "Player")
+PLAY_SAL <- PLAY_SAL %>% 
+  mutate(Height = (as.numeric(substr(PLAY_SAL$Ht, start = 1, stop = 1)) * 12) + 
+           (as.numeric(substr(PLAY_SAL$Ht, start = 3, stop = 4)))) %>% 
+  mutate(Salary = log(`Salary2019-20`))
+ggplot(PLAY_SAL, aes(x = Height, y = Salary, color = Pos)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) + 
+  ggtitle("NBA Player Salary on Height", subtitle = "2019-2020") +
+  labs(x = "Height in Inches", y = "Salary in Dollars") + 
+  theme_gdocs() + 
+  scale_fill_manual(name = "Position") + 
+  theme(plot.title = element_text(hjust = 0.45), plot.subtitle = element_text(hjust = 0.45))
+```
+
+
+## 2 Boxplots
+
+```{r}
+ggplot(PLAY_SAL, aes(x = Team, y = Height, fill = Team, color = Team, alpha = 0.2)) + 
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 1.5, width = 0.65) + 
+  ggtitle("NBA Player Height Based on Team", subtitle = "2019-2020") +
+  labs(x = "Team", y = "Height in Inches") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", axis.text.x = element_text(size = 7)) 
+```
+
+## 3 Histograms
+
+```{r fig.width = 8, fig.height = 9}
+yelp3 <- read_csv("http://www.stat.ucla.edu/~vlew/datasets/yelp3.csv")
+VEGAN <- filter(yelp3, categories.0 == "Vegan")
+BUFFET <- filter(yelp3, categories.0 == "Buffets")
+SP_BAR <- filter(yelp3, categories.0 == "Sports Bars")
+
+V <- ggplot(VEGAN, aes(x = stars)) + 
+  geom_histogram(aes(y = ..density..), color = "black", fill = "orange", breaks = seq(1, 5, 0.5)) +
+  ggtitle("Vegan Ratings") + 
+  labs(x = "Yelp Rating", y = "density") + 
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+B <- ggplot(BUFFET, aes(x = stars)) + 
+  geom_histogram(aes(y = ..density..), color = "black", fill = "blue", breaks = seq(1, 5, 0.5)) +
+  ggtitle("Buffet Ratings") + 
+  labs(x = "Yelp Rating", y = "density") + 
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+S <- ggplot(SP_BAR, aes(x = stars)) + 
+  geom_histogram(aes(y = ..density..), color = "black", fill = "maroon", breaks = seq(1, 5, 0.5)) +
+  ggtitle("Sports Bar Ratings") + 
+  labs(x = "Yelp Rating", y = "density") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(V, B, S)
+```
+
+## 4 Multiple Line Graph, Stacked Data
+
+```{r}
+AMZN <- read_csv("AMZN.csv")
+AMZN2020 <- AMZN %>% slice(222:251) %>% 
+  select(Date, Open, High, Low, Close) %>%
+  pivot_longer(-Date, names_to = "status", values_to = "price")
+AMZN2020
+ggplot(AMZN2020, aes(x = Date, y = price, color = status)) + 
+  geom_line() +
+  ggtitle("Amazon (AMZN) Price", subtitle = "Past 30 Days") + 
+  labs(caption = "Source: Yahoo.com finance", x = "Date", y = "Price in Dollars") +
+  scale_x_date(date_breaks = "days", date_labels = "%m/%d") +
+  theme_fivethirtyeight() + 
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        axis.text = element_text(size = 8, angle = 90))
+```
+

@@ -1,0 +1,59 @@
+---
+title: "Gupta_Aarushi_Lesson03"
+author: "SID 905-328-941"
+date: "Stats 20 Summer 20"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 4. 
+
+### A.
+
+```{r}
+## loaded the Lesson 3 data into RStudio session
+load("~/Desktop/Lesson3SU.RData")
+ls()
+```
+
+### B.
+
+```{r}
+## store all values of Q4B > 0 in Q4BS and find its length
+Q4BS <- Q4B[Q4B > 0]
+length(Q4BS)
+```
+
+### C.
+
+```{r}
+## change all values of NA in Q4C to "Unknown" and find length
+Q4C[is.na(Q4C)] <- "Unknown"
+length(Q4C[Q4C == "Unknown"])
+```
+
+### D.
+
+```{r}
+mean(Q4D331, na.rm = TRUE)  ## Q4D331 mean
+median(Q4D331, na.rm = TRUE)  ## Q4D331 median
+max(Q4D331, na.rm = TRUE)  ## Q4D331 max
+mean(Q4D430, na.rm = TRUE)  ## Q4D430 mean
+median(Q4D430, na.rm = TRUE)  ## Q4D430 median
+max(Q4D430, na.rm = TRUE)  ## Q4D430 max
+mean(Q4D531, na.rm = TRUE)  ## Q4D531 mean
+median(Q4D531, na.rm = TRUE)  ## Q4D531 median
+max(Q4D531, na.rm = TRUE)  ## Q4D531 max
+mean(Q4D614, na.rm = TRUE)  ## Q4D614 mean
+median(Q4D614, na.rm = TRUE)  ## Q4D614 median
+max(Q4D614, na.rm = TRUE)  ## Q4D614 max
+```
+
+The distribution of deaths due to Covid-19 increased dramatically between the months of March and April and continued to increase in May. Although from May 30 to June 14 the max number of deaths increased, the mean decreased, indicating that even though the number of cases has risen, on average, most countries' deaths are decreasing and there is probably an outlier country with rapidly increasing deaths. 
+

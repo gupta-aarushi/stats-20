@@ -1,0 +1,70 @@
+---
+title: "Gupta_Aarushi_Lesson04"
+author: "SID 905-328-941"
+date: "Stats 20 Summer 20"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: cerulean
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 4 
+
+### 1.(a)
+
+```{r}
+a <- matrix(c(18.1, 15.5, 14.7, 17.4, 12.6, 15.5, 15.2, 13.2), nrow = 2, ncol = 4, byrow = TRUE)
+a
+```
+
+### 1.(b)
+
+```{r}
+## overwrite 2nd column with square root of original 2nd column
+a[,2] <- sqrt(a[,2])
+a
+```
+
+### 1.(c)
+
+```{r}
+## remove 1st row and 4th column and store as a new object
+a2 <- a[2,1:3]
+a2
+is.vector(a2)
+```
+R returns a vector when we remove both the 1st row and 4th column from (b) and store it as a new object.
+
+### 2.(a)
+
+```{r}
+load("~/Desktop/2020 Classes/STATS 20/Lesson 3/Lesson3SU.RData")
+num2 <- list(Q4B, Q4C, Q4D331, Q4D430, Q4D531, Q4D614)
+```
+
+### 2.(b)
+
+```{r}
+## shows single list object using all data in Lesson3SU.RData
+str(num2)
+```
+
+### 3
+
+```{r}
+MyModel <- lm(dist ~ speed, data = cars)
+MySummary <- summary(MyModel)
+mean(MySummary$residuals)
+```
+
+
+### 4
+
+plot(MyModel) generates 4 different scatterplots, all involving residuals and one other variable. plot(MySummary) produces an error, even though it's a list. MySummary generates an error because there are no clearly defined x and y coordinates in the list for R to take the data from.

@@ -1,0 +1,47 @@
+---
+title: "Lesson 6 - Data Frames II"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: vignette
+    toc: true
+    toc_depth: 3
+---
+```{r}
+library(dplyr)
+library(readr)
+```
+
+## 4A
+
+```{r 4A}
+load("~/Desktop/2020 Classes/STATS 20/Lesson 5/Lesson05Data.RData")
+D.1 <- D.1 %>% rename(dept=X2, coursenum=X3, title=X4, room=X6,, last=X7, first=X8, 
+                      enrolled=X10, capacity=X11)
+names(D.1)
+```
+
+
+## 4B
+
+```{r 4B}
+write_csv(D.1, "D.1newnames.csv")
+```
+
+## 4C.1
+Given the dataset C.1 from Lesson 5, 
+```{r 4C1}
+# 6394*0.7 = 4475.8
+dset1 <- C.1 %>% slice(1:4476)
+dset2 <- C.1 %>% slice(4477:6394)
+```
+
+
+## 4C.2
+
+```{r 4C2}
+dset3 <- C.1 %>% select(date, cases)
+dset4 <- C.1 %>% select(state, deaths)
+```

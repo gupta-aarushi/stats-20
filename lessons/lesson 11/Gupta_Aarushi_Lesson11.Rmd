@@ -1,0 +1,128 @@
+---
+title: "Lesson 11 - Tables"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+```{r}
+load(url("http://www.stat.ucla.edu/~vlew/datasets/ucpay2017.RData"))
+library(knitr)
+library(dplyr)
+library(pander)
+```
+
+# 2.  Typical tabling questions from a SQL interview
+
+Just write "yes" or "no" next to each question and if you wrote "yes", please indicate whether you could program it in base R, dplyr or both:
+
+### A.1 minimum "RegularPay" and 
+
+yes, Base R and dplyr.
+
+### A.2 maximum "RegularPay" 
+
+yes, Base R and dplyr.
+
+### B. Count all employees whose Position contains the string 'Prof'  (and not 'Profl'):
+
+yes, Base R and dplyr.
+
+### C.1 total "Total Wages", 
+
+yes, dplyr.
+
+### C.2 mean "Total Wages" 
+
+yes, dplyr.
+
+### C.3 median "Total Wages" 
+
+yes, dplyr.
+
+### D  Find the total and mean "RegularPay" for each unique Position which contains the string 'Prof' (and not 'Profl') and also has at least (at minimum) 40 employees (40 rows, observations).
+
+yes, dplyr.
+
+# 3. Optional
+
+### A.
+
+yes, dplyr.
+
+### B.
+
+yes, dplyr.
+
+### C.
+
+yes, dplyr.
+
+# 5. See how many you can answer now that you've read the entire lesson
+
+### A.1 minimum "RegularPay" and 
+
+```{r}
+# Base R
+min(uclaPayroll2017$RegularPay)
+
+# dplyr
+uclaPayroll2017 %>% summarize(minimum = min(RegularPay))
+```
+
+### A.2 maximum "RegularPay" 
+
+```{r}
+# Base R
+max(uclaPayroll2017$RegularPay)
+
+# dplyr
+uclaPayroll2017 %>% summarize(maximum = max(RegularPay))
+```
+
+### B. Count all employees whose Position contains the string 'Prof'  (and not 'Profl'):
+
+```{r}
+uclaPayroll2017 %>% filter(substr(`Position`, 1, 4) == "Prof") %>% 
+    summarize(count = n())
+
+```
+
+### C.1 total "Total Wages", 
+
+```{r}
+uclaPayroll2017 %>% filter(Position == "Prof") %>% 
+  summarise(total = sum(`Total Wages`)) %>% 
+  pander()
+```
+
+### C.2 mean "Total Wages" 
+
+```{r}
+uclaPayroll2017 %>% group_by(`Department Title`) %>% 
+  summarise(total = sum(`Total Wages`), 
+            avg = mean(`Other Pay (Payroll Explorer)`),
+            minimum = min(`Other Pay (Payroll Explorer)`), 
+            maximum = max(`Other Pay (Payroll Explorer)`)) %>% 
+  pander()
+```
+
+### C.3 median "Total Wages" 
+
+```{r}
+uclaPayroll2017 %>% group_by(`Department Title`) %>% 
+  summarise(total = sum(`Total Wages`), 
+            avg = mean(`Other Pay (Payroll Explorer)`),
+            minimum = min(`Other Pay (Payroll Explorer)`), 
+            maximum = max(`Other Pay (Payroll Explorer)`)) %>% 
+  pander()
+```
+
+### D  Find the total and mean "RegularPay" for each unique Position which contains the string 'Prof' (and not 'Profl') and also has at least (at minimum) 40 employees (40 rows, observations).
+
+```{r}
+load(url("http://www.stat.ucla.edu/~vlew/datasets/ucpay2017.RData"))
+library(knitr)
+library(dplyr)
+library(pander)
+```
