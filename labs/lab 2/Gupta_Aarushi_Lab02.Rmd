@@ -1,0 +1,77 @@
+---
+title: "Lab 2"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(readr)
+```
+
+## 1. The Data {.tabset}
+### A
+
+```{r 1A}
+data <- read_tsv("dataLab2.txt")
+dest <- read_tsv("destLab2.txt")
+glimpse(data)
+glimpse(dest)
+```
+
+
+
+## 2. Cleaning/Verification/Transforming {.tabset}
+### A
+
+```{r 2A}
+# remove users not from the USA 
+data2 <- data %>% filter(user_location_country == "UNITED STATES OF AMERICA")
+glimpse(data2)
+```
+
+### B
+
+```{r 2B}
+# modify popular data by computing mean and subtracting from original
+dest2 <- transmute(dest, srch_destination_id, srch_destination_name, srch_destination_type_id, srch_destination_latitude, srch_destination_longitude, popular1=popular_naturalfeature_beach-mean(popular_naturalfeature_beach), popular2=popular_activity_dining-mean(popular_activity_dining), popular3=popular_social_bars-mean(popular_social_bars), popular4=popular_shopping_shopping-mean(popular_shopping_shopping), popular5=popular_historical_historical-mean(popular_historical_historical), popular6=popular_food_coffee-mean(popular_food_coffee), popular7=popular_field_business-mean(popular_field_business))
+summary(dest2)
+```
+
+
+## 3. Joining/Merging {.tabset}
+### A
+
+srch_destination_id serves as the = for a join or merge, since it's present in both dest2 and data2. 
+
+### B
+
+```{r 3B}
+newdestdata <- merge(data2, dest2, by="srch_destination_id")
+glimpse(newdestdata)
+```
+
+### C (optional challenge)
+
+After examining the citywiki dataset, I see that the variable named "Place" is identical to the variable named "user_location_city" in the newdestdata dataset. So, we can merge the two datasets based on this variable.
+```{r 3C}
+citywiki <- read_csv("citywiki.csv")
+destdatacity <- merge(newdestdata, citywiki, by.x="user_location_city", by.y="Place")
+glimpse(destdatacity)
+```
+
+
+## 4. What kinds of questions? {.tabset}
+
+Given that the data shows a user's interaction with the Expedia site, we can ask: 
+
+(1) Are users who booked from a mobile device more likely to book as a package (correlating is_mobile and is_package)?
+
+(2) Are users with children more likely to book hotels near popular tourist attractions? If so, which kind of tourist attractions do they prefer (as categorized by the popular_ variables)?
+
+(3) Are users in certain locations more likely to book at certain time(s) of the day (e.g. in the morning, afternoon, or evening)? If so, do they prefer to book by mobile? 

@@ -1,0 +1,90 @@
+---
+title: "Lab 3"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+## 1. The Visualization
+### A
+
+```{r 1A}
+# First, I loaded the data into R. 
+
+load(file = "LAB3.rdata")
+
+# Then, I created a table by extracting the city and risk variables from LAinspect. I converted the table into a dataframe in order to use ggplot2, but I made sure to filter it for certain cities before making the plot.
+
+cityrisk <- table(LAinspect$`FACILITY RISK`, LAinspect$`FACILITY CITY`)
+cityrisk.df <- as.data.frame(cityrisk)
+colnames(cityrisk.df) <- c("RISK_LVL","FAC_CITY", "COUNT")
+FILT_CITY <- cityrisk.df %>% 
+  filter(FAC_CITY %in% c("ARCADIA", "BEVERLY HILLS", "CULVER CITY", "EL SEGUNDO", "GLENDALE", "INGLEWOOD",
+                         "HUNTINGTON PARK", "LANCASTER", "MANHATTAN BEACH", "MARINA DEL REY", "NORTH HOLLYWOOD",
+                         "POMONA", "REDONDO BEACH", "SANTA MONICA", "TORRANCE", "VENICE", "WEST HOLLYWOOD")) 
+
+# Finally, I used a grouped horizontal barplot to display the data. 
+
+FILT_CITY %>% 
+  ggplot(aes(x = COUNT, y = FAC_CITY, fill = as.factor(RISK_LVL))) + 
+  geom_bar(position = "dodge", width = 0.8, stat = "identity") + 
+  ggtitle("Level of Facility Risk By Different Cities") + 
+  ylab("Facility City") + 
+  xlab("Risk Level Count") + 
+  theme_bw() + 
+  scale_fill_manual(values = c("indianred2", "springgreen3", "yellow2"), name = "Risk Level") + 
+  theme(plot.title = element_text(hjust = 0.45), plot.subtitle = element_text(hjust = 0.45))
+```
+
+## 2. Writing About the Creative Process
+### A
+
+My barplot shows the relationship between the different levels of facility risk, as divided into high, moderate, and low risk, based on city location. In short, for each of the cities shown, the barplot displays the number of facilities that fell into high, moderate, and low risk. 
+
+### B
+
+It involved the `FACILITY RISK` and `FACILITY CITY` variables from the LAinspect dataset. More specifically, I filtered for only 17 certain cities, otherwise the barplot would be too large and overwhelming. Thus, it ignores the other cities in the original LAinspect dataset. Also, I chose to illustrate the relationship between city and risk because it was most intuitive to me, but I also could have chosen city and grade (`GRADE`) or city and score (`SCORE`). 
+
+### C
+
+I decided to use a barplot, because it most effectively illustrates the categorical data (Facility City) against the numeric data (Risk Level Count). Also, I decided to group the bars to clearly show that each city has a breakdown of high, moderate, and low risk food-related facilities. For the data visualization itself, I chose to use the data for only 17 cities, because otherwise the barplot was too overwhelming. I used the colors red, yellow, and green for high, moderate, and low risk respectively because these are intuitive colors associated with dangerous and safe.   
+
+## 3. "What If" questions
+### A
+
+I would like to have columns that show: 
+
+1. `FACILITY DISTRICT`: The congressional district where each food-related facility is located (based off of city location or zip code). Examples of some values could include "District 23", "District 25", "District 28", etc. 
+2. `INSPECTION DATE`: The date (MM/YYYY) when each catalogued inspection was conducted. Examples of some values could include "01/2018", "03/2019", "02/2020", etc. 
+
+The district location data can be found at the County of Los Angeles Bureau of Engineering/GIS Mapping Division database or through the U.S. Census Data. The inspection date would usually be found on the inspection form itself, where the employee ID and risk assessment are pulled from. It can also be found on the County of Los Angeles Public Health Services database.
+
+### B
+
+Some questions I could answer with this additional data are: 
+
+1. What is the relationship between district location and risk levels of food-related facilities? More specifically, what is the breakdown of high, moderate, and low risks in each district and what does it reveal relative to the other districts? (Note that for this, I would have to calculate the proportions for each risk level based on the number of facilities that were inspected per district)
+2. What is the relationship between inspection date and risk level of food-related facilities? More specifically, did some years or months have more of a certain risk level than other dates? 
+3. Are some districts' food-related facilities more likely to be marked "high risk" than other districts' facilities?
+
+Additionally, having district-level data would allow me to display all cities on the barplot, because it would be significantly more condensed. 
+
+### C 
+
+Some additional R skills that I need in order to create visualizations using the above data are: 
+
+1. Better understanding of ggplot2, including various plot types, additional syntax, and faceting, to more effectively transform, display, and compare the data
+2. Knowledge of SQL querying in order to retrieve relevant data from the County of Los Angeles databases 

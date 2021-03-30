@@ -1,0 +1,353 @@
+---
+title: "Lab 4"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output:
+  html_document:
+    theme: readable # default, cerulean, journal, flatly, darkly, readable, spacelab, united, cosmo, lumen, paper, sandstone, simplex, and yeti
+    highlight: default # default, tango, pygments, kate, monochrome, espresso, zenburn, haddock, and textmate
+    code_folding: show # show, hide
+    df_print: default # default, kable, tibble, paged
+    tidy: yes
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 1. _Coercion: For each of the following lines a-d, please explain what type of output will result (e.g., a numeric vector) and why R is producing that output._ {.tabset .tabset-fade .tabset-pills}
+
+#### a. `c(0, TRUE)`
+This results in a numeric vector, because TRUE is coerced into the numeric value 1, and R therefore returns 0 1. The precedence of types from highest to lowest is character, numeric, then logical; the logical value TRUE is thus coerced into a numeric value of 1. 
+
+#### b. `c("f", 1)`
+This results in a character vector, because 1 is coerced into a character "1", and R therefore returns "f" "1". The precedence of types from highest to lowest is character, numeric, then logical; the numeric value 1 is thus coerced into a character value of "1". 
+
+#### c. `c(list(1), "b")`
+This results in a list consisting of 1 and "b" because R can combine objects of different types into a single list, even combining lists into a list. 
+
+#### d. `c(FALSE, 1L)`
+This results in a numeric vector, because FALSE is coerced into the numeric value 0 and 1L stands for 1. The precedence of types from highest to lowest is character, numeric, then logical; the logical value FALSE is thus coerced into a numeric value of 0. 
+
+
+### 2. _What is the difference between a NULL, an NA, and a NaN?_  {.tabset}
+NULL is an object that's returned by R when a function or expression results in an undefined value. It can be thought of as a list of length 0. NA is a logical constant with length 1 and represents a missing value. It stands for Not Available. NaN is a vector with length 1 and it applies to numerical values, such as evaluating 0/0. It stands for Not a Number.
+
+
+### 3. _You see this one day (I've seen it...) on a Stat 100A homework:_ {.tabset .tabset-fade .tabset-pills}
+#### So here is the question -- which method do you suppose is more efficient and more important -- why?
+The second method is more efficient because it only creates one object (z). R doesn't have to first create an object y and then combine it to make z; it simply creates object z in the first place and modifies it. 
+
+
+### 4. _A vector `rep(c(TRUE, FALSE), 500000)` is a logical vector. In addition to `TRUE` or `FALSE`, what other value can be included in the vector so that it remains a logical vector and is not coerced into another class?_ {.tabset}
+Another type of vector that's logical is NA, so NA can be included in rep(c(TRUE, FALSE), 500000). 
+
+
+### 5. _Your friend is a new R learner and wrote the following:_ {.tabset .tabset-fade .tabset-pills}
+And says to you "Why do I need to use `unlist()` to convert a list to an atomic vector? Why doesn't `as.vector()` work?"  
+
+#### And you say...  
+A list is already a type of vector, but it's components are not necessarily all atomic. `as.vector(z)` will only convert a list into an atomic vector if all the components are atomic, which in this case, they aren't.`unlist(z)` solves this problem by converting the list to an atomic vector, including all it's components.
+
+
+### 6. Tell your friend {.tabset .tabset-fade .tabset-pills}
+#### why R is responding with "longer object length is not a multiple of shorter object length" and giving that particular vector.
+R responds with this error, because it expects both vectors to be the same length, so it can compare them element by element. Because the objects aren't of the same length (first one is length 20 and the second is length 9), R performs recycling, where it recycles the elements of the shorter object over and over again to result in both objects being the same length. 
+
+However, in this case, 20 is not a multiple of 9, so R believes that we have made a mistake. Normally, R would just repeat the shorter object several times to match the length of the longer one, if they were multiples. Since they aren't, R produces this error message. 
+
+The particular vector results because R does `1*1`, `2*2`, and so on until it reaches `9*9`. Then, it runs out of numbers in the c(1:9) vector, so it begins recycling. It continues with the c(1:20) vector, with 10, this time multiplied by 1, since the c(1:9) repeats. This continues until the c(1:20) vector reaches its end with 20. 
+
+#### For those of you who have had some linear algebra, you can test yourself (no credit from me...) how do you generate the result your friend wanted given the two input vectors?
+
+
+### 7. _Factors are tricky, please explain what happened to factor b when we modified its levels?_{.tabset .tabset-fade .tabset-pills}
+
+#### Example
+```{r}
+a <- as.Date(c("1970-01-01", "1971-01-01", "1972-01-01", "1973-01-01", "1974-01-01", "1975-01-01"), format = "%Y-%m-%d")
+b <- factor(weekdays(a))
+levels(b) <- c("Monday", "Tuesday", "Wednesday", "Thursday",
+               "Friday", "Saturday", "Sunday")
+```
+When running only the first two lines of code, we find that the correct order of `weekdays(a)` should be Thursday, Friday, Saturday, Monday, Tuesday, Wednesday. When a is converted to a factor b, every weekday is mapped to its own level, and the levels are organized alphabetically. In this form, the 1st element (Thursday) is mapped to the 4th level, the 2nd element (Friday) is mapped to the 1st level, and so on. 
+
+When we run the third line of code, which orders the levels in standard convention (of weekdays), we find that the order of the elements of b has been modified to Thursday, Monday, Wednesday, Tuesday, Friday, Saturday, and the levels are ordered in standard form. However, the relationship of mapping has stayed constant; the 1st element (Thursday) is still mapped to the 4th level, the 2nd element (Monday) is still mapped to the 1st level, the 3rd element (Wednesday) is still mapped to the 3rd level, and so on. 
+
+In short, the relationship of mapping from elements to levels remains constant, but when changing the order of `levels(b)`, it modifies the order of the elements as a result. 
+
+
+### 8. _(continuation of 7) What does this code do? Why do b1 and b2 differ from b and from each other?_{.tabset .tabset-fade .tabset-pills}
+
+#### What does this do?
+```{r}
+a <- as.Date(c("1970-01-01", "1971-01-01", "1972-01-01", "1973-01-01", "1974-01-01", "1975-01-01"), format = "%Y-%m-%d")
+b <- factor(weekdays(a), levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
+               "Friday", "Saturday", "Sunday"))
+b
+```
+When the factor b itself is created, `weekdays(a)` also designates the standard ordering of the levels. Since it's in the same step, the ordering of the elements of b doesn't change and is correct with respect to the Date.
+
+#### Why are b1 and b2 different (or in what ways?)
+```{r}
+b1 <- rev(b)
+b1
+```
+b1 is the reverse order of the elements of b, and the levels of b1 are the same order and same as the levels of b.
+
+```{r}
+b2 <- factor(b, levels = rev(b))
+b2
+```
+b2 is the same order and same elements of b, and the levels of b2 is the same as the elements of b in reverse order.
+
+
+### 9. _Matrix AA, is a 100 x 10 matrix with the numbers 1 through 1000. For each even row, compute the sum of the even columns of the matrix. This requires one line of code without semi-colons._{.tabset .tabset-fade .tabset-pills}
+
+#### One line please
+```{r}
+AA <- matrix(1:1000, nrow=100)
+data.frame(R_NUM = seq(2, 100, 2), R_SUM = rowSums(AA[seq(2, 100, 2), seq(2, 10, 2)]))
+```
+
+
+### 10. _What does as.matrix() do when used on a data frame with columns of different types?_{.tabset .tabset-fade .tabset-pills}
+When used on a data frame with columns of different types, R will follow the precedence of types from highest to lowest, so character, numeric, then logical. Thus, it will try to coerce the data frame into an atomic column matrix, following the precedence rules. If the columns are factors, it will coerce them into character vectors as well. 
+
+
+### 11. _Can you create a data frame with 0 rows? What about 0 columns? Please write "Yes" or "No" and support your answer with some R code_ {.tabset .tabset-fade .tabset-pills}
+
+#### some R code
+
+Yes, we can create a data frame with 0 rows as follows. 
+```{r}
+data.frame(matrix(nrow = 0, ncol = 50))
+```
+Yes, we can create a data frame with 0 columns as follows.
+```{r}
+data.frame(matrix(nrow = 50, ncol = 0))
+```
+
+
+### 12. _In your own words, please write about the difference between the assignment operators `<-` and `<<-`? You should refer to help(assignOps) for this answer_{.tabset .tabset-fade .tabset-pills}
+`<-` is used to assign a variable into the current environment, where they are then also evaluated. 
+`<<-` is used to either redefine a pre-existing variable in the parent environment or if no matching variable is found, to assign a variable in the global environment. 
+
+
+### 13 What does deprecated mean?{.tabset .tabset-fade .tabset-pills}
+Deprecated means that an object is about to be removed from R. These objects are instead replaced with another version, in this case distinct() instead of distinct_(), to remedy the issue. 
+
+
+### 14. _Your friend has returned and has learned that an R programmer can use proc.time() to time code.  Your friend has worked very hard to produce this number:_{.tabset .tabset-fade .tabset-pills}
+
+```{r}
+# run this before the time test to clear the memory
+rm(list = ls(all.names = TRUE))
+```
+```{r}
+ptm <- proc.time()
+x <- 1:1000000
+my_logsum <- 0
+for(i in 1:length(x)) {
+my_logsum <- my_logsum + log(x[i])
+}
+my_logsum
+proc.time() - ptm
+```
+
+#### Please show your friend  how to produce the same number without using a for loop and without creating my_logsum (it's faster without those two):
+
+```{r}
+# run this before the time test to clear the memory
+rm(list = ls(all.names = TRUE))
+```
+```{r}
+ptm <- proc.time()
+x <- 1:1000000
+sum(log(x))
+proc.time() - ptm
+```
+
+### 15. _More Base R FYI_{.tabset .tabset-fade .tabset-pills}
+
+#### match, duplicated, unique  
+Used to find where two vectors or arguments have the first position of same elements or if they have unique elements. Returns a vector. 
+
+#### %in%  
+Used to determine if the left operand is in the right operand. Returns a logical vector. 
+
+#### subset  
+Returns subsets of vector, matrices, or data frames that follow the designated conditions in the code and contain the selected elements.
+
+#### with  
+Constructs an environment from data given designated conditions, then evaluates an R expression in that environment.
+
+#### by 
+Used to split a data frame by row into data frames using subsetting, then the same functions are applied to each subset (each data frame) individually.
+
+#### split, unsplit  
+split() divides the data into groups based on some factor f. 
+unsplit() reverses the effects of split().
+
+#### all.equal, identical
+Used to compare objects for equality, or near equality in the case of all.equal(). 
+all.equal() tests for near equality, and if the two objects are different, the mean relative difference is reported. 
+identical() tests for exact equality and returns either TRUE or FALSE.
+
+#### ==, !=, >, >=, <, <= ## help(comparison)
+
+Compares values in atomic vectors and return the logical vectors TRUE or FALSE. `==` is equal to, `!=` is not equal to, `>` is greater than, `<` is not greater than, `>=` is greater than or equal to, and `<=` is less than or equal to. 
+
+#### is.na
+Indicates which elements are missing by returning a logical vector for values that are NA in the data. 
+
+#### any
+Returns TRUE if at least one of the values specified is TRUE, and FALSE if all values are FALSE. 
+
+#### *, +, -, /, ^, %%, %/% ## help(arithmetic)
+
+Performs basic arithmetic operations on numeric vectors or those that can be coerced into the type. `*` is multiplication, `+` is addition, `-` is subtraction, `/` is division, `^` is exponential, `%%` is modulus or remainder, and `%/%` is rounded-down, integer-only division.
+
+#### abs, sign
+abs() is the absolute value function, which returns the absolute value of the argument. 
+sign() returns the sign of the argument, meaning -1 if negative, 0 if 0, or 1 if positive.
+
+#### ceiling, floor, round, trunc, signif # help(round)  
+ceiling() returns a numeric vector with the smallest integer greater than or equal to the argument. 
+floor() returns a numeric vector with the largest integer less than or equal to the argument. 
+trunc() returns a numeric vector after truncating the values (decimal places) of the argument. 
+round() returns the argument rounded to a specified number number of decimal places. 
+signif() returns the first argument rounded to a specified number of significant digits. 
+
+#### max, min, prod, sum  
+max() and min() return the maximum or minimum of all the values in their arguments. 
+prod() and sum() return the product and sum of all the values in their arguments. 
+
+#### cummax, cummin, cumprod, cumsum  
+cummax(), cummin(), cumprod(), and cumsum() return the cumulative maximum, minimum, product, and sum, respectively, from the beginning of the vector up until the current index.  
+
+#### diff
+Returns vector containing the successive differences between the elements of the argument. The returned vecor is always 1 element shorter than the argument.  
+
+#### &, |, !, xor # help(Logic)
+Performs logical comparisons between two vectors, either logical or numerical, and returns the logical values TRUE or FALSE. `&` means logical AND, `|` means logical OR, `!` means logical NOT, and `xor` means logical exlcusive OR. 
+
+#### all
+Returns a logical vector of TRUE if all values in the argument are TRUE, and FALSE if at least one is FALSE.
+
+#### intersect, union, setdiff, setequal
+union() returns the union of the two given sets. 
+intersect() returns the intersection of the two given sets. 
+setdiff() returns the differences in the sets aka the elements in the first set that aren't in the second.
+setequal() returns a logical vector of TRUE if the two given sets are equal, and FALSE if they aren't. 
+
+#### which
+Returns the TRUE indxes of objects (they must be logical arguments).
+
+#### matrix
+Creates an atomic matrix from a set of given values.
+
+#### the coercion rules character > numeric > logical
+Coercion occurs when R attempts to convert values into different types to make atomic vectors. The precedence of types from highest to lowest is character, numeric, then logical. This means that logical values (TRUE or FALSE) are coerced into either numeric or character values, depending on the problem. Numeric values can be coerced into character values. 
+
+#### length, dim, ncol, nrow
+length() returns the legnth of a matrix or dataframe. 
+dim() returns the dimensions of a matrix or dataframe. 
+ncol() returns the number of columns in a matrix or dataframe. 
+nrow() returns the number of rows in a matrix or dataframe.
+
+#### cbind, rbind
+cbind() combines a sequence of vector, matrix, or dataframe arguments by columns.
+rbind() combines a sequence of vector, matrix, or dataframe arguments by rows.
+
+#### names, colnames, rownames
+names() returns or sets the names of an object. 
+colnames() returns or sets the column names of a matrix-like object. 
+rownames() returns or sets the row names of a matrix-like object.
+
+#### t
+Returns the transpose of a matrix or data frame.
+
+#### diag
+Returns, replaces, or creates the diagonal of a matrix. 
+
+#### as.matrix, data.matrix
+as.matrix() tries to convert the argument into a matrix using coercion rules. 
+data.matrix() returns the matrix formed by converting all variables to numeric values and binding them as columns of the matrix. 
+
+#### c
+Combines the arguments to form a vector. The output type follows the standard hierarchy, but it starts out as a list. 
+
+#### rep
+Replicates the elements of its argument. 
+
+#### seq, seq_alongs
+seq() generates a sequence from a specified start, end, and interval. 
+seq_alongs() generates a sequence that's the same length as its argument.
+
+#### rev
+Reverses the order of elements of its argument.
+
+#### sample
+Takes a sample of a designated size from the elements of its argument, either with or without replacement.
+
+#### (is).(character/numeric/logical/...)
+Returns the logical vector TRUE or FALSE if the argument is of type character, numeric, or logical. 
+
+#### (as).(character/numeric/logical/...)
+Tries to coerce its argument into the type character, numeric, or logical. 
+
+#### list, unlist
+list() constructs a list. 
+unlist() simplifies a list into its atomic components. 
+
+#### data.frame
+Creates a data frame, which are a list of variables organized into the same number of rows, from its argument. 
+
+#### factor, levels, nlevels
+factor() creates a factor, basically a category, from a vector. 
+levels() provides access or sets the levels of a factor. 
+nlevels() returns the number of levels of its argument.
+
+#### reorder, relevel
+reorder() reorders the levels of its first argument (factor) based on its second argument (usually a numeric variable). 
+relevel() reorders the levels of a factor by setting its first level. 
+
+#### array
+Creates an array using given data and specified dimensions.
+
+#### dim
+Returns or sets the dimensions of its argument. 
+
+#### dimnames
+Returns or sets the names of the dimensions of its argument.
+
+#### merge
+Merges two objects into a data frame (possibly by coercion) based on common or specified columns or row names. 
+
+#### order
+Returns the argument sorted by ascending or descending order.
+
+#### rank
+Returns the rank, by increasing, decreasing, random, average, maximum, or minimum order, of values in a vector. 
+
+#### sort
+Partially orders vectors or factors into ascending or descending order.
+
+#### cat
+Converts its arguments to character vectors, concatenates them into 1 character vector, and outputs this vector.
+
+#### print
+Prints its argument and returns it.
+
+#### paste, paste0
+Converts its arguments to character strings and concatenates them together with or without any spaces between them.
+
+#### readline
+Prompts the user to type in a line from the terminal and reads it in. 
+
+#### readLines
+Reads a specified number or all lines from a connection. 
