@@ -1,0 +1,210 @@
+---
+title: "Final Exam"
+author: "Aarushi Gupta SID 905-328-941"
+date: "Stats 20 Section 1"
+output: html_document
+---
+
+```{r message = FALSE, warning = FALSE}
+library(readr)
+library(dplyr)
+library(DT)
+library(tidyverse)
+library(ggplot2)
+library(forcats)
+```
+
+## 1. 
+
+```{r}
+# First, we load the data into R. 
+load(file = "FinalData.rdata")
+
+# Then, we combine the CrimesA and CrimesB datasets using the inner_join() function.
+dfA <- as.data.frame(CrimesA)
+dfB <- as.data.frame(CrimesB)
+crimes <- inner_join(dfA, dfB, by = "Id.Number")
+```
+
+> There are `275,517` observations and `17` variables available in the combined dataset (crimes) consisting of CrimesA and CrimesB.
+
+## 2.
+
+```{r warning = FALSE, message = FALSE}
+# First, we calculate the proportion of all crimes that resulted in an arrest. 
+(sum(crimes$arrest == 'TRUE'))/(nrow(crimes))
+
+# Then, we calculate the proportion of crimes that resulted in an arrest for each ward. 
+ward_crime <- crimes[c(11, 15)] %>% group_by(ward) %>% summarize(t_crime = sum(n())) 
+ward_arrests <- crimes[c(11, 15)] %>% group_by(ward) %>% summarize(t_arr = sum(arrest == 'TRUE'))
+ward_data <- inner_join(ward_crime, ward_arrests, by = "ward") %>% 
+  mutate(prop_arr = (t_arr)/(t_crime)) %>% na.omit()
+
+# Finally, we use a datatable to display the proportions.  
+datatable(ward_data)
+```
+
+Approximately `0.289` or `28.9%` of all crimes resulted in an arrest. This proportion varies significantly by ward, with some having a smaller proportion of crimes resulting in an arrest and others having a greater proportion of crimes resulting in an arrest. 
+
+## 3.
+
+```{r message = FALSE}
+# First, we create the new column for Part 1 by filtering for the specified crimes. 
+crimes <- crimes %>% mutate(PARTONE = primary.type == "arson" | primary.type == "burglary" | 
+                              primary.type == "crim sexual assault" | primary.type == "criminal sexual assault" | 
+                              primary.type == "homicide" | primary.type == "motor vehicle theft" |
+                              (grepl("aggravated|agg", description, ignore.case = TRUE) & 
+                                 grepl("assault|asslt", description, ignore.case = TRUE)))
+
+# Then, we calculate the proportion of Part 1 crimes for each ward. 
+p1 <- crimes[c(15, 18)] %>% group_by(ward) %>% summarize(t_p1 = sum(PARTONE == 'TRUE'))
+ward_p1 <- inner_join(ward_crime, p1, by = "ward") %>% 
+  mutate(prop_p1 = (t_p1)/(t_crime)) %>% na.omit()
+
+# Finally, we display the proportions in decreasing order using a datatable.  
+datatable(ward_p1[rev(order(ward_p1$prop_p1)),])
+```
+
+## 4.
+
+```{r message = FALSE, fig.height = 4.75, fig.width = 9}
+# First, we extract the date and arrest (crime) variables from crimes, making sure to extract only the month from the date variable.  
+date <- crimes[c(2, 11)] %>% mutate(CRIME_DATE = substring(CRIME_DATE, 1, 2)) %>% 
+  mutate(CRIME_DATE = as.numeric(CRIME_DATE))
+
+# Then, we calculate the total number of crimes committed per month. We also change the month numbers into month abbreviations and rename the data columns.  
+crime_m <- date %>% group_by(CRIME_DATE) %>% summarize(tot_crime = sum(n())) 
+crime_m$CRIME_DATE <- (month.abb[crime_m$CRIME_DATE])
+colnames(crime_m) = c("Month", "Total Crimes")
+
+# Finally, we display the data in a datatable and a connected scatterplot. 
+datatable(crime_m)
+ crime_m %>% ggplot(aes(x = factor(Month, level = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")), 
+                         y = `Total Crimes`, group = 1)) + 
+  geom_point(color = "indianred3") + geom_line(color = "indianred3") + 
+  ggtitle("Total Number of Crimes Committed Per Month in 2014") + 
+  labs(x = "Month", y = "Number of Crimes") + 
+  geom_hline(yintercept = 17500, size = 1, colour = "black") + 
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+In this U.S. metropolitan city, more crimes are committed in June, July, and August than other months. In other words, there is a seasonality of crimes, where the number of crimes rises in the summer and decreases drastically in the winter. As shown throughout 2014, the number of crimes committed in this city hit a peak in July.
+
+This is consistent with findings from the Justice Department and other agencies, who have found that as temperatures increase, crimes tend to also go up. However, the level of correlation between the two does vary depending on the type of crime committed (e.g. violent, non-violent, etc.), among other factors. 
+
+## 5.
+
+```{r message = FALSE}
+# First, we remove the de-identified numeric location from the block addresses. 
+street <- crimes[c(4, 5)] %>% mutate(block = substring(block, 7)) 
+
+# Then, we identify the street with most crimes.
+street_crime <- street %>% group_by(block) %>% 
+  summarize(t_crime = sum(n())) %>% 
+  filter(t_crime == max(t_crime))
+street_crime
+
+# Finally, we identify the street with the most homicides. 
+street_hom <- street %>% group_by(block) %>% 
+  summarize(t_hom = sum(primary.type == "homicide")) %>% 
+  filter(t_hom == max(t_hom))
+street_hom
+```
+
+a. The street with the most crimes is `S Michigan Avenue`. 
+b. The streets with the most homocides are `S Indiana Avenue`, `S Laflin Street`, `S Morgan Street`, and `W 63rd Street`.
+
+## 6.
+
+```{r warning = FALSE, message = FALSE}
+# First, we set the correct seed and sample size. 
+set.seed(905328941)
+crime_sample <- crimes[sample(1:nrow(crimes), size = 100),]
+head(crime_sample)
+
+# Then, we calculate the proportion of crimes that resulted in arrests in the sample. 
+(sum(crime_sample$arrest == 'TRUE'))/(nrow(crime_sample))
+```
+
+In my resulting sample, the proportion of crimes that resulted in arrests is `0.25` or `25%`. 
+
+## 7.
+
+```{r message = FALSE}
+# First, we filter out crimes that had less than 1000 crimes committed. 
+type_crime <- crimes[c(4, 11)] %>% group_by(`primary.type`) %>% 
+  mutate(tot_crime = sum(n())) %>% 
+  filter(tot_crime >= 1000) %>%
+  
+# Then, we calculate the proportion of crimes that resulted in arrests for each type of crime. 
+  mutate(tot_arr = sum(arrest == 'TRUE')) %>%
+  mutate(prop = (tot_arr)/(tot_crime)) %>%
+  select(-arrest, -tot_crime, -tot_arr) %>% 
+  unique()
+
+# Finally, we order the proportion of arrests in decreasing order to display only the top 10 types of crime.
+type_crime <- type_crime[rev(order(type_crime$prop)),]
+head(type_crime, 10)
+```
+
+The top 10 types of crime with at least 1,000 crimes that result in the highest proportion of arrests, in order from greatest to least, are: narcotics, prostitution, interference with a public officer, weapons violation, public peace violation, criminal trespass, assault, battery, other offense, and offense involving children. 
+
+
+## 8.
+
+```{r message = FALSE, fig.height = 7, fig.width = 11}
+# First, we extract the type of crime, arrest, and district variables from the dataset for further analysis.
+dist <- crimes[c(4, 11, 16)] 
+
+# We classify the following types of crime as "violent" based on FBI Reporting criteria.  
+dist <- dist %>% mutate(`primary.type` = fct_recode(`primary.type`, "violent" = "arson", "violent" = "assault", "violent" = "robbery", "violent" = "battery", "violent" = "crim sexual assault", "violent" = "criminal sexual assault", "violent" = "homicide", "violent" = "human trafficking", "violent" = "kidnapping", "violent" = "interference with public officer", "violent" = "motor vehicle theft", "violent" = "offense involving children", "violent" = "stalking", "violent" = "sex offense"))
+
+# We classify the following types of crime as "nonviolent" based on FBI Reporting criteria.  
+dist <- dist %>% mutate(`primary.type` = fct_recode(`primary.type`, "nonviolent" = "burglary", "nonviolent" = "concealed carry license violation", "nonviolent" = "criminal damage", "nonviolent" = "deceptive practice", "nonviolent" = "gambling", "nonviolent" = "non-criminal", "nonviolent" = "non - criminal", "nonviolent" = "non-criminal (subject specified)", "nonviolent" = "obscenity", "nonviolent" = "public indecency", "nonviolent" = "public peace violation", "nonviolent" = "prostitution", "nonviolent" = "criminal trespass", "nonviolent" = "theft", "nonviolent" = "weapons violation", "nonviolent" = "intimidation", "nonviolent" = "liquor law violation", "nonviolent" = "narcotics", "nonviolent" = "other narcotic violation", "nonviolent" = "other offense")) 
+
+# We create a table to calculate the number of crimes per type of crime per district. 
+distc <- table(dist$primary.type, crimes$district)
+
+# We convert the table into a dataframe in order to use ggplot2.
+distcrime.df <- as.data.frame(distc)
+colnames(distcrime.df) <- c("Crime Type","District", "Count")
+
+# Then, we extract the arrest and district variables from the crimes dataset to calculate the total number 
+# of crimes per district. 
+dist2 <- crimes[c(11, 16)] %>% group_by(district) %>% 
+  mutate(tot_crime = sum(n())) %>% 
+  select(-arrest) %>% 
+  unique()
+colnames(dist2) <- c("District", "Total Crimes")
+
+# We combine the datasets by district to calculate the percentage of each type of crime committed per district. 
+# We filter out District 31, since it has only 3 data points, and standardize the District notation. 
+crimedist.df <- inner_join(distcrime.df, dist2, by = "District") %>% 
+  mutate(Proportion = (Count/`Total Crimes`)) %>% 
+  filter(District != "031") %>% 
+  mutate(District = substring(District, 2)) %>%
+  mutate(District = as.factor(as.numeric(as.character(District))))
+
+# Finally, we create a stacked barplot to display the data. 
+crimedist.df %>% ggplot(aes(x = District, y = Proportion, fill = as.factor(`Crime Type`))) + 
+  geom_bar(stat = "identity", position = position_stack(reverse = TRUE), width = 0.5) + 
+  ggtitle("Percentage of Violent and Nonviolent Crimes Committed Per District in 2014") + 
+  labs (x = "District", y = "Percentage of Crimes", caption = "Source: ucr.fbi.gov") + 
+  geom_hline(yintercept = 0, size = 1, colour = "black") + 
+  scale_fill_manual(values = c("indianred2", "turquoise3"), name = "Type of Crime") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)), breaks = seq(0, 1.00, 0.2), 
+                     labels = scales::percent) + 
+  scale_x_discrete(expand = c(0.04, 0.04)) + 
+  theme_bw() + 
+  theme(legend.position = "bottom", plot.title = element_text(size = 14, hjust = 0.5), 
+        axis.ticks.x = element_blank()) 
+```
+
+Using the original district, arrest, and type of crime variables in the dataset, I constructed a visualization displaying the percentage of violent and nonviolent crimes committed in each district in 2014. According to the FBI Uniform Crime Reporting Division, "violent" crimes are those that cause bodily harm or injury to another person, while "nonviolent" crimes are usually related to drugs, public discipline, and property and don't involve attacking a victim.
+
+As shown above, District 7 has the greatest percentage of violent crimes, with District 3 and 4 as close seconds. Thus, these can be classified as unsafe or dangerous districts. Conversely, District 1 has the the greatest percentage of nonviolent crimes, with District 18 as a close second. Thus, these can be classified as relatively safe districts. 
+
+After some online digging, I found that this dataset represents crimes committed in Chicago, and my findings align with studies done by other agencies about the relative danger level of Chicago districts. District 7 (Englewood), District 3 (Grand Crossing), and District 4 (South Chicago) are known to be some of Chicago's most dangerous neighborhoods, while District 18 (Near North) and District 1 (Central) are safer. The primary use of this visualization would most likely be for homebuyers in Chicago looking for more information about the safety of each district.  
